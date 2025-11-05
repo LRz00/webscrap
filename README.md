@@ -2,3 +2,5 @@
 
 # Amazon Wishlist Tracker (WIP)
 Este projeto é um **scraper + pipeline de mensageria com Kafka** que monitora uma **wishlist pública da Amazon** e envia os dados periodicamente para um **tópico Kafka**, permitindo gerar alertas baseados em **flutuação de preços**.
+
+<img width="601" height="610" alt="python alert drawio" src="https://github.com/user-attachments/assets/e2e366ce-d031-4338-8d15-053583d62a21" />
