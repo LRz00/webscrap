@@ -1,0 +1,3 @@
+config = {
+    "wishlist_url": ""
+}
