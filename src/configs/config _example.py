@@ -1,3 +1,5 @@
 config = {
-    "wishlist_url": ""
+    "wishlist_url": "",
+    "kafka_broker": "",
+    "kafka_topic": ""
 }
