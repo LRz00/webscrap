@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-from config import config
+from src.configs.config import config
 import time
 
 def setup_driver():
@@ -41,7 +41,7 @@ def get_name_and_price(item):
     price_fraction = item.select_one(".a-price-fraction")
     
     if price_whole:
-        price = f"{price_whole.text.strip()}.{price_fraction.text.strip() if price_fraction else '00'}"
+        price = f"{price_whole.text.strip()}{price_fraction.text.strip() if price_fraction else '00'}"
     else:
         price = "N/A"
     
@@ -54,19 +54,11 @@ def parse_wishlist(html_content):
     data = []
     for item in items:
         name, price = get_name_and_price(item)
-        data.append((name, price))
+        data.append({"name": name, "price": price})
     
     return data
 
-def main():
+def run_scrapper(url):
     print("Wishlist Scraper with Selenium is running...")
-    
-    url = config["wishlist_url"]
-    html_content = get_html_content_selenium(url)
-    items_data = parse_wishlist(html_content)
-    
-    for i, (name, price) in enumerate(items_data, 1):
-        print(f"{i}. {name} - ${price}")
-
-if __name__ == "__main__":
-    main()
+    html = get_html_content_selenium(url)
+    return parse_wishlist(html)
