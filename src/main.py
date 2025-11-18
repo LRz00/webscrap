@@ -1,7 +1,12 @@
-from src.kafka.producer import send_wishlist_data
-def main():
-    send_wishlist_data()
-
+from src.scrapper.wishlist_scrapper import run_scrapper
+from src.configs.config import config
+from src.kafka.producer import publish_wishlist_update
 
 if __name__ == "__main__":
-    main()
+    url = config["wishlist_url"]
+
+    data = run_scrapper(url)
+
+    publish_wishlist_update(data)
+
+    print("Data sent")
