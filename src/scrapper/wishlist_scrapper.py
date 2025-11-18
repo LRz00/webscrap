@@ -5,7 +5,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-from src.configs.config import config
 import time
 
 def setup_driver():
@@ -61,4 +60,9 @@ def parse_wishlist(html_content):
 def run_scrapper(url):
     print("Wishlist Scraper with Selenium is running...")
     html = get_html_content_selenium(url)
-    return parse_wishlist(html)
+
+    data = parse_wishlist(html)
+
+    return data
+
+
