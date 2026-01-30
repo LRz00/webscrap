@@ -39,11 +39,34 @@ services:
     ports:
       - "19000:9000"
     environment:
-      KAFKA_BROKERCONNECT: kafka:29092   # 🔥 IMPORTANTE
+      KAFKA_BROKERCONNECT: kafka:29092   
       SERVER_PORT: 9000
       JVM_OPTS: "-Xms32M -Xmx64M"
     restart: always
 
+  postgres:
+    image: postgres:16-alpine
+    networks:
+      - broker-kafka
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 networks:
   broker-kafka:
     driver: bridge
+
+volumes:
+  postgres_data:
