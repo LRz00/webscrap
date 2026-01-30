@@ -4,7 +4,7 @@ from src.kafka.producer import publish_wishlist_update, close_producer
 
 if __name__ == "__main__":
     try:
-        url = config["wishlist_url"]
+        url = config.get("wishlist_url", "")
         
         if not url:
             raise ValueError("wishlist_url is not configured in config.py")
@@ -13,6 +13,8 @@ if __name__ == "__main__":
 
         if not data:
             print("Warning: No data scraped from wishlist")
+            # Publish empty list to indicate successful scrape with no results
+            publish_wishlist_update([])
         else:
             publish_wishlist_update(data)
             print("Data sent")

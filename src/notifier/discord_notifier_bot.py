@@ -33,6 +33,8 @@ class DiscordNotifier:
 
     def send_message(self, message: str):
         try:
+            if not message:
+                raise ValueError("Message cannot be empty")
             asyncio.run(self._run(message))
         except Exception as e:
             print(f"Error sending Discord message: {e}")

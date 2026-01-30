@@ -15,15 +15,16 @@ def validate_url(url):
     
     try:
         parsed = urlparse(url)
-        # Check if it's a valid HTTP/HTTPS URL
-        if parsed.scheme not in ['http', 'https']:
-            raise ValueError(f"Invalid URL scheme: {parsed.scheme}")
-        
-        # Check if it's an Amazon domain (basic check)
-        if 'amazon' not in parsed.netloc.lower():
-            print(f"Warning: URL does not appear to be an Amazon domain: {parsed.netloc}")
     except Exception as e:
         raise ValueError(f"Invalid URL format: {e}")
+    
+    # Check if it's a valid HTTP/HTTPS URL
+    if parsed.scheme not in ['http', 'https']:
+        raise ValueError(f"Invalid URL scheme: {parsed.scheme}")
+    
+    # Check if it's an Amazon domain (basic check)
+    if 'amazon' not in parsed.netloc.lower():
+        print(f"Warning: URL does not appear to be an Amazon domain: {parsed.netloc}")
 
 def setup_driver():
     chrome_options = Options()
@@ -81,9 +82,6 @@ def parse_wishlist(html_content):
 def run_scrapper(url):
     print("Wishlist Scraper with Selenium is running...")
     try:
-        if not url:
-            raise ValueError("URL cannot be empty")
-        
         # Validate URL before processing
         validate_url(url)
         

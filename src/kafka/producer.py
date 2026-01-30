@@ -1,5 +1,9 @@
 from kafka import KafkaProducer
 import json
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 producer = KafkaProducer(
     bootstrap_servers="localhost:9092",
@@ -11,7 +15,7 @@ def publish_wishlist_update(data):
         producer.send("wishlist_prices", value=data)
         producer.flush()
     except Exception as e:
-        print(f"Error publishing to Kafka: {e}")
+        logger.error(f"Error publishing to Kafka: {e}")
         raise
 
 def close_producer():
@@ -19,4 +23,4 @@ def close_producer():
     try:
         producer.close()
     except Exception as e:
-        print(f"Error closing Kafka producer: {e}")
+        logger.warning(f"Error closing Kafka producer: {e}")

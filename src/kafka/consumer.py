@@ -44,7 +44,17 @@ for message in consumer:
                     continue
                     
                 item_name = item.get("name", item.get("product_name", "Unknown"))
-                price_str = item.get("price", "0")
+                price_str = item.get("price")
+                
+                # Skip items without price information
+                if not price_str:
+                    print(f"Warning: Item {item_name} has no price information, skipping")
+                    continue
+                
+                # Skip items with "N/A" price
+                if price_str == "N/A":
+                    print(f"Info: Item {item_name} has N/A price, skipping")
+                    continue
                 
                 # Handle price parsing safely
                 try:
@@ -58,6 +68,10 @@ for message in consumer:
                 if row is not None:
 
                     old_price = float(row[0])
+                    # Skip if both prices are 0
+                    if old_price == 0 and item_price == 0:
+                        print(f"Info: Skipping {item_name} - both old and new prices are 0")
+                        continue
                     # Prevent division by zero
                     if old_price != 0:
                         variation = ((item_price - old_price) / old_price * 100)
