@@ -6,6 +6,25 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
+from urllib.parse import urlparse
+
+def validate_url(url):
+    """Validate that the URL is a valid Amazon URL"""
+    if not url:
+        raise ValueError("URL cannot be empty")
+    
+    try:
+        parsed = urlparse(url)
+    except Exception as e:
+        raise ValueError(f"Invalid URL format: {e}")
+    
+    # Check if it's a valid HTTP/HTTPS URL
+    if parsed.scheme not in ['http', 'https']:
+        raise ValueError(f"Invalid URL scheme: {parsed.scheme}")
+    
+    # Check if it's an Amazon domain (basic check)
+    if 'amazon' not in parsed.netloc.lower():
+        print(f"Warning: URL does not appear to be an Amazon domain: {parsed.netloc}")
 
 def setup_driver():
     chrome_options = Options()
@@ -29,6 +48,9 @@ def get_html_content_selenium(url):
         driver.get(url)
         time.sleep(5) 
         return driver.page_source
+    except Exception as e:
+        print(f"Error fetching URL {url}: {e}")
+        raise
     finally:
         driver.quit()
 
@@ -59,10 +81,20 @@ def parse_wishlist(html_content):
 
 def run_scrapper(url):
     print("Wishlist Scraper with Selenium is running...")
-    html = get_html_content_selenium(url)
+    try:
+        # Validate URL before processing
+        validate_url(url)
+        
+        html = get_html_content_selenium(url)
 
-    data = parse_wishlist(html)
-
-    return data
+        data = parse_wishlist(html)
+        
+        if not data:
+            print("Warning: No items found in wishlist")
+        
+        return data
+    except Exception as e:
+        print(f"Error in scrapper: {e}")
+        raise
 
 

@@ -5,8 +5,19 @@ from src.configs.config import config
 class DiscordNotifier:
     def __init__(self):
         intents = discord.Intents.default()
-        self.token = config["discord_token"]
-        self.channel_id = int(config["discord_server"])
+        self.token = config.get("discord_token", "")
+        discord_server = config.get("discord_server", "")
+        
+        if not self.token:
+            raise ValueError("discord_token is required in config")
+        if not discord_server:
+            raise ValueError("discord_server is required in config")
+        
+        try:
+            self.channel_id = int(discord_server)
+        except ValueError:
+            raise ValueError(f"discord_server must be a valid integer, got: {discord_server}")
+        
         self.client = discord.Client(intents=intents)
 
     async def _send(self, message: str):
@@ -21,7 +32,13 @@ class DiscordNotifier:
         await self.client.close() 
 
     def send_message(self, message: str):
-        asyncio.run(self._run(message))
+        try:
+            if not message:
+                raise ValueError("Message cannot be empty")
+            asyncio.run(self._run(message))
+        except Exception as e:
+            print(f"Error sending Discord message: {e}")
+            raise
 
     async def _run(self, message: str):
         self.client.task = asyncio.create_task(self._send(message))

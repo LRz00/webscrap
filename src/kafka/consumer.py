@@ -29,27 +29,70 @@ INSERT_PRICE_QUERY = text("""
 
 
 for message in consumer:
-    items = message.value
-    changes = []
+    try:
+        items = message.value
+        if not isinstance(items, list):
+            print(f"Warning: Expected list of items, got {type(items)}")
+            continue
+        
+        changes = []
 
-    with engine.begin() as conn:
-        for item in items:
-            item_name = item["product_name"]
-            item_price = float(item["price"].replace("R$", "").replace(",", ".").strip())
+        with engine.begin() as conn:
+            for item in items:
+                if not isinstance(item, dict):
+                    print(f"Warning: Expected dict item, got {type(item)}")
+                    continue
+                    
+                item_name = item.get("name", item.get("product_name", "Unknown"))
+                price_str = item.get("price")
+                
+                # Skip items without price information
+                if not price_str:
+                    print(f"Warning: Item {item_name} has no price information, skipping")
+                    continue
+                
+                # Skip items with "N/A" price
+                if price_str == "N/A":
+                    print(f"Info: Item {item_name} has N/A price, skipping")
+                    continue
+                
+                # Handle price parsing safely
+                try:
+                    item_price = float(price_str.replace("R$", "").replace(",", ".").strip())
+                except (ValueError, AttributeError):
+                    print(f"Warning: Invalid price format for item {item_name}: {price_str}")
+                    continue
 
-            result = conn.execute(GET_LAST_PRICE_QUERY, {"product_name": item_name})
-            row = result.fetchone()
-            if row is not None:
+                result = conn.execute(GET_LAST_PRICE_QUERY, {"product_name": item_name})
+                row = result.fetchone()
+                if row is not None:
 
-                old_price = float(row[0])
-                variation = ((item_price - old_price) / old_price * 100)
-                if abs(variation) >= PERCENTUAL_THRESHOLD:
-                    changes.append(
-                            f"- {item_name}: {old_price:.2f} → {item_price:.2f} "
-                            f"({variation:+.2f}%)"
-                        )
-            conn.execute(INSERT_PRICE_QUERY, {"product_name": item_name, "price": item_price})
-            
-    if changes:
-        msg = "⚠️ **Price Changes Detected:**\n" + "\n".join(changes) 
-        notifier.send_message(msg)
+                    old_price = float(row[0])
+                    # Skip if both prices are 0
+                    if old_price == 0 and item_price == 0:
+                        print(f"Info: Skipping {item_name} - both old and new prices are 0")
+                        continue
+                    # Prevent division by zero
+                    if old_price != 0:
+                        variation = ((item_price - old_price) / old_price * 100)
+                        if abs(variation) >= PERCENTUAL_THRESHOLD:
+                            changes.append(
+                                    f"- {item_name}: {old_price:.2f} → {item_price:.2f} "
+                                    f"({variation:+.2f}%)"
+                                )
+                    elif item_price != old_price:
+                        # Handle case where old price was 0
+                        changes.append(
+                                f"- {item_name}: {old_price:.2f} → {item_price:.2f} (new price)"
+                            )
+                conn.execute(INSERT_PRICE_QUERY, {"product_name": item_name, "price": item_price})
+                
+        if changes:
+            msg = "⚠️ **Price Changes Detected:**\n" + "\n".join(changes) 
+            try:
+                notifier.send_message(msg)
+            except Exception as e:
+                print(f"Error sending notification: {e}")
+    except Exception as e:
+        print(f"Error processing message: {e}")
+        # Continue processing next messages instead of crashing

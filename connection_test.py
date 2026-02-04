@@ -3,6 +3,20 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from urllib.parse import urlparse
+
+def validate_url(url):
+    """Validate that the URL is safe to visit"""
+    if not url:
+        raise ValueError("URL cannot be empty")
+    
+    try:
+        parsed = urlparse(url)
+    except Exception as e:
+        raise ValueError(f"Invalid URL format: {e}")
+    
+    if parsed.scheme not in ['http', 'https']:
+        raise ValueError(f"Invalid URL scheme: {parsed.scheme}")
 
 def setup_driver():
     chrome_options = Options()
@@ -21,16 +35,20 @@ def setup_driver():
     return driver
 
 def test_connection(url: str):
+    driver = None
     try:
+        validate_url(url)
         driver = setup_driver()
         driver.get(url)
         title = driver.title
         print(f"Connection successful to: '{title}'")
-        driver.quit()
         return True
     except Exception as e:
         print(f"Error: {e}")
         return False
+    finally:
+        if driver:
+            driver.quit()
 
 
 if __name__ == "__main__":
