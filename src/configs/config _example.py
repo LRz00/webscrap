@@ -5,5 +5,6 @@ config = {
     "redis_port": "",
     "redis_host": "",
     "discord_token": "",
-    "discord_server": ""
+    "discord_server": "",
+    "database_url": ""
 }
