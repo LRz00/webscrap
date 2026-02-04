@@ -4,8 +4,6 @@
 
 A **web scraper + Kafka messaging pipeline** that monitors a **public Amazon wishlist** and sends price data to a Kafka topic, enabling **price fluctuation alerts** via Discord.
 
-<img width="601" height="610" alt="python alert drawio" src="https://github.com/user-attachments/assets/e2e366ce-d031-4338-8d15-053583d62a21" />
-
 ## Features
 
 - 🕷️ **Web Scraping** — Uses Selenium + BeautifulSoup to extract product names and prices from Amazon wishlists
